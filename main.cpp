@@ -3,14 +3,20 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <chrono>
 
+
+#define TEST 2
+
+using steady_clock = std::chrono::steady_clock;
 
 typedef int data_t;
 typedef std::vector<size_t> sequence_vector_t;
 typedef sequence_vector_t(*sequence_rule_t)(size_t size);
+typedef float timing_t;
+
 
 // Uma sequência matemática.
-// Eagerly evaluated
 class Sequence {
 public:
     sequence_rule_t rule;
@@ -27,6 +33,10 @@ public:
 void ShellSort(data_t list[], size_t size, Sequence step_sequence, std::ofstream& file_out) {
     sequence_vector_t sequence_elements = step_sequence.generate(size);
 
+    #if TEST == 2
+        steady_clock::time_point start_time = steady_clock::now();
+    #endif
+    
     for (int sequence_index = sequence_elements.size() - 1; sequence_index >= 0; sequence_index--) {
         size_t step = sequence_elements[sequence_index];
 
@@ -48,13 +58,20 @@ void ShellSort(data_t list[], size_t size, Sequence step_sequence, std::ofstream
                 list[insertion_index] = new_key;
             }
         }
+        
+        #if TEST <= 1
+            for (size_t i = 0; i < size; i++) {
+                file_out << list[i] << " ";
+            }
 
-        for (size_t i = 0; i < size; i++) {
-            file_out << list[i] << " ";
-        }
-
-        file_out << " INCR=" << step << std::endl;
+            file_out << " INCR=" << step << std::endl;
+        #endif
     }
+
+    #if TEST == 2
+        std::chrono::duration<timing_t> execution_time = steady_clock::now() - start_time;
+        file_out << "SHELL, " << size << ", " << execution_time.count() << ", 0.000001 GHz Half-core Brastemp Core i69.420" << std::endl;
+    #endif
 }
 
 sequence_vector_t shell_rule(size_t sorting_size) {
@@ -98,18 +115,29 @@ sequence_vector_t ciura_rule(size_t sorting_size) {
     return sequence;
 }
 
-void get_input_vector(std::vector<int>& vector, std::ifstream& file_in) {
+// Retorna booleano de se deve continuar
+bool get_input_vector(std::vector<int>& vector, std::ifstream& file_in) {
     size_t vector_size;
     data_t number;
 
     file_in >> vector_size;
+
+    if (file_in.fail()) {
+        return false;
+    }
+
     vector.resize(vector_size);
 
     for (size_t i = 0; i < vector_size; i++){
         file_in >> vector[i];
     }
-}
 
+    if (file_in.fail()) {
+        return false;
+    }
+
+    return true;
+}
 
 struct BenchmarkConfig {
     std::vector<data_t>& data_vector;
@@ -117,11 +145,13 @@ struct BenchmarkConfig {
 };
 
 void sort_benchmark(BenchmarkConfig config, Sequence sequence, std::string sequence_name) {
-    for (int number : config.data_vector) {
-        config.file_out << number << " ";
-    }
+    #if TEST <= 1
+        for (int number : config.data_vector) {
+            config.file_out << number << " ";
+        }
 
-    config.file_out << " SEQ=" << sequence_name << std::endl;
+        config.file_out << " SEQ=" << sequence_name << std::endl;
+    #endif
 
     std::vector<data_t> data_copy = config.data_vector;
     ShellSort(&data_copy[0], config.data_vector.size(), sequence, config.file_out);
@@ -131,17 +161,26 @@ int main() {
     std::ifstream file_in;
     std::ofstream file_out;
 
-    file_in.open("entradas/entrada-teste.txt");
-    file_out.open("saida1.txt");
+    #if TEST == 0
+        file_in.open("entradas/entrada0.txt");
+        file_out.open("saida0.txt");
+    #elif TEST == 1
+        file_in.open("entradas/entrada1.txt");
+        file_out.open("saida1.txt");
+    #else
+        file_in.open("entradas/entrada2.txt");
+        file_out.open("saida2.txt");
+    #endif
 
     if (!file_in.is_open()) {
         std::cerr << "Erro ao tentar abrir arquivo de entrada" << std::endl;
         return 1;
     }
 
-    while (!file_in.eof()) {
-        std::vector<data_t> data_vector;
-        get_input_vector(data_vector, file_in);
+    std::vector<data_t> data_vector;
+    
+    while (get_input_vector(data_vector, file_in)) {
+        Sequence sequence = Sequence(shell_rule);
 
         BenchmarkConfig config = {
             .data_vector = data_vector,
@@ -152,7 +191,7 @@ int main() {
         sort_benchmark(config, Sequence(&knuth_rule), "KNUTH");
         sort_benchmark(config, Sequence(&ciura_rule), "CIURA");
     }
-    
+
     file_in.close();
     file_out.close();
 
