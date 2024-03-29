@@ -4,43 +4,6 @@
 #include <fstream>
 #include <string>
 
-/*
-Procedimento insDiretaShellSort(C, s, f, h)
-// C: vetor a ser ordenado
-// s: tamanho do vetor
-// h: incremento
-// f: célula de início do incremento
-início
-    para j←(f+h) até s passo h faça
-    início
-            chave ← C[j]
-            // inserir chave na seq ordenada C [1...j-1] 
-            i ← (j–h)
-            enquanto(i>0) e (C[i]>chave) faça
-            início
-                C[i+h] ← C[i]
-                i ← (i-h)
-            fim
-        C[i+h] ← chave
-    fim
-fim
-
-
-Procedimento shellSort(C, np, n)
-// np = número de passos
-// h = valor calculado do incremento
-// j = define a célula de início de um segmento
-// n = tamanho do vetor (qtd. de elementos)
-início
-    para p ← np decrescendo_até 1 faça
-    início
-        h ← 2p-1
-        para j ← 1 até h faça
-            insDiretaShellSort(C, n, j, h)
-    fim 
-fim
-*/
-
 
 typedef int data_t;
 typedef std::vector<size_t> sequence_vector_t;
