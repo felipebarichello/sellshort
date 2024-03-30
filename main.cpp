@@ -13,7 +13,6 @@ using steady_clock = std::chrono::steady_clock;
 typedef int data_t;
 typedef std::vector<size_t> sequence_vector_t;
 typedef sequence_vector_t(*sequence_rule_t)(size_t size);
-typedef float timing_t;
 
 
 // Uma sequência matemática.
@@ -30,7 +29,7 @@ public:
     }
 };
 
-void ShellSort(data_t list[], size_t size, Sequence step_sequence, std::ofstream& file_out) {
+void ShellSort(data_t list[], size_t size, Sequence step_sequence, std::ofstream& file_out, std::chrono::duration<float>& execution_time) {
     sequence_vector_t sequence_elements = step_sequence.generate(size);
 
     #if TEST == 2
@@ -69,8 +68,7 @@ void ShellSort(data_t list[], size_t size, Sequence step_sequence, std::ofstream
     }
 
     #if TEST == 2
-        std::chrono::duration<timing_t> execution_time = steady_clock::now() - start_time;
-        file_out << "SHELL, " << size << ", " << execution_time.count() << ", 0.000001 GHz Half-core Brastemp Core i69.420" << std::endl;
+        execution_time = steady_clock::now() - start_time;
     #endif
 }
 
@@ -154,7 +152,12 @@ void sort_benchmark(BenchmarkConfig config, Sequence sequence, std::string seque
     #endif
 
     std::vector<data_t> data_copy = config.data_vector;
-    ShellSort(&data_copy[0], config.data_vector.size(), sequence, config.file_out);
+    std::chrono::duration<float> execution_time;
+    ShellSort(&data_copy[0], config.data_vector.size(), sequence, config.file_out, execution_time);
+
+    #if TEST == 2
+        config.file_out << sequence_name << ", " << config.data_vector.size() << ", " << execution_time.count() << ", 0.000001 GHz Half-core Brastemp Core i69.420" << std::endl;
+    #endif
 }
 
 int main() {
