@@ -98,7 +98,7 @@ sequence_vector_t ciura_rule(size_t sorting_size) {
     sequence_vector_t sequence;
     size_t fixed_part[] { 1, 4, 10, 23, 57, 132, 701 };
 
-    for (size_t i = 0; i < sizeof(fixed_part); i++) {
+    for (size_t i = 0; i < sizeof(fixed_part) / sizeof(size_t); i++) {
         if (sorting_size < fixed_part[i]) {
             return sequence;
         } else {
@@ -156,7 +156,7 @@ void sort_benchmark(BenchmarkConfig config, Sequence sequence, std::string seque
     ShellSort(&data_copy[0], config.data_vector.size(), sequence, config.file_out, execution_time);
 
     #if TEST == 2
-        config.file_out << sequence_name << ", " << config.data_vector.size() << ", " << execution_time.count() << ", 0.000001 GHz Half-core Brastemp Core i69.420" << std::endl;
+        config.file_out << sequence_name << ", " << config.data_vector.size() << ", " << execution_time.count() * 1e3f << ", 0.000001 GHz Half-core Brastemp Core i69.420" << std::endl;
     #endif
 }
 
