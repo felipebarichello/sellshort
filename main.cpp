@@ -7,6 +7,7 @@
 
 
 #define TEST 2
+#define PROCESSOR_NAME "Intel(R) Core(TM) i5-7400 CPU @ 3.00 GHz, 3001 Mhz, 4 Core(s), 4 Logical Processor(s)"
 
 using steady_clock = std::chrono::steady_clock;
 
@@ -156,7 +157,7 @@ void sort_benchmark(BenchmarkConfig config, Sequence sequence, std::string seque
     ShellSort(&data_copy[0], config.data_vector.size(), sequence, config.file_out, execution_time);
 
     #if TEST == 2
-        config.file_out << sequence_name << ", " << config.data_vector.size() << ", " << execution_time.count() * 1e3f << ", 0.000001 GHz Half-core Brastemp Core i69.420" << std::endl;
+        config.file_out << sequence_name << ", " << config.data_vector.size() << ", " << execution_time.count() * 1e3f << ", \"" << PROCESSOR_NAME << "\"" << std::endl;
     #endif
 }
 
