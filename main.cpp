@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <chrono>
+#include <iomanip>
 
 
 #define TEST 2
@@ -157,7 +158,11 @@ void sort_benchmark(BenchmarkConfig config, Sequence sequence, std::string seque
     ShellSort(&data_copy[0], config.data_vector.size(), sequence, config.file_out, execution_time);
 
     #if TEST == 2
-        config.file_out << sequence_name << ", " << config.data_vector.size() << ", " << execution_time.count() * 1e3f << ", \"" << PROCESSOR_NAME << "\"" << std::endl;
+        config.file_out << sequence_name << ","
+        << config.data_vector.size() << ","
+        << std::fixed << std::setprecision(6) << execution_time.count() * 1e3f
+        << ",\"" << PROCESSOR_NAME << "\""
+        << std::endl;
     #endif
 }
 
