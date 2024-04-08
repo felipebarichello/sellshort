@@ -11,8 +11,7 @@ Contém os arquivos do problema bônus do Bubbles and Buckets.
 ## entradas/
 
 Os arquivos de entrada para o programa principal.
-- `entrada0.txt` é o arquivo de exemplo contido dentro da especificação do trabalho.
-- `entrada1.txt` e `entrada2.txt` são os arquivos fornecidos para os testes de fato.
+`entrada1.txt` e `entrada2.txt` são os arquivos fornecidos para os testes.
 
 ## integrantes.txt
 
@@ -22,6 +21,4 @@ Os nomes dos integrantes do grupo.
 
 O código fonte do programa principal, escrito em C++.
 Gera `saidaN.txt` para os arquivos `entradaN.txt`.
-Possui dois parâmetros que podem ser modificados antes da compilação do código:
-- `TEST` indica qual arquivo de entrada `entrada{TEST}.txt` será lido.
-- `PROCESSOR_NAME` define o nome do processador que será utilizado em `saida2.txt`.
+A constante `PROCESSOR_NAME` define o nome do processador que será utilizado em `saida2.txt`.

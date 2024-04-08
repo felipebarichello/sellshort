@@ -7,7 +7,6 @@
 #include <iomanip>
 
 
-#define TEST 2
 #define PROCESSOR_NAME "Intel(R) Core(TM) i5-7400 CPU @ 3.00 GHz, 3001 Mhz, 4 Core(s), 4 Logical Processor(s)"
 
 using steady_clock = std::chrono::steady_clock;
@@ -31,12 +30,15 @@ public:
     }
 };
 
-void ShellSort(data_t list[], size_t size, Sequence step_sequence, std::ofstream& file_out, std::chrono::duration<float>& execution_time) {
+enum class TestType {
+    Correctness,
+    Performance
+};
+
+void ShellSort(data_t list[], size_t size, Sequence step_sequence, std::ofstream& file_out, TestType test_type, std::chrono::duration<float>& execution_time) {
     sequence_vector_t sequence_elements = step_sequence.generate(size);
 
-    #if TEST == 2
-        steady_clock::time_point start_time = steady_clock::now();
-    #endif
+    steady_clock::time_point start_time = steady_clock::now();
     
     for (int sequence_index = sequence_elements.size() - 1; sequence_index >= 0; sequence_index--) {
         size_t step = sequence_elements[sequence_index];
@@ -60,18 +62,16 @@ void ShellSort(data_t list[], size_t size, Sequence step_sequence, std::ofstream
             }
         }
         
-        #if TEST <= 1
+        if (test_type == TestType::Correctness) {
             for (size_t i = 0; i < size; i++) {
                 file_out << list[i] << " ";
             }
 
             file_out << " INCR=" << step << std::endl;
-        #endif
+        }
     }
 
-    #if TEST == 2
-        execution_time = steady_clock::now() - start_time;
-    #endif
+    execution_time = steady_clock::now() - start_time;
 }
 
 sequence_vector_t shell_rule(size_t sorting_size) {
@@ -144,61 +144,81 @@ struct BenchmarkConfig {
     std::ofstream& file_out;
 };
 
-void sort_benchmark(BenchmarkConfig config, Sequence sequence, std::string sequence_name) {
-    #if TEST <= 1
+void sort_benchmark(BenchmarkConfig config, Sequence sequence, std::string sequence_name, TestType test_type) {
+    if (test_type == TestType::Correctness) {
         for (int number : config.data_vector) {
             config.file_out << number << " ";
         }
 
         config.file_out << " SEQ=" << sequence_name << std::endl;
-    #endif
+    }
 
     std::vector<data_t> data_copy = config.data_vector;
     std::chrono::duration<float> execution_time;
-    ShellSort(&data_copy[0], config.data_vector.size(), sequence, config.file_out, execution_time);
+    ShellSort(&data_copy[0], config.data_vector.size(), sequence, config.file_out, test_type, execution_time);
 
-    #if TEST == 2
+    if (test_type == TestType::Performance) {
         config.file_out << sequence_name << ","
         << config.data_vector.size() << ","
         << std::fixed << std::setprecision(6) << execution_time.count() * 1e3f
         << ",\"" << PROCESSOR_NAME << "\""
         << std::endl;
-    #endif
+    }
 }
 
 int main() {
     std::ifstream file_in;
     std::ofstream file_out;
+    std::vector<data_t> data_vector;
 
-    #if TEST == 0
-        file_in.open("entradas/entrada0.txt");
-        file_out.open("saida0.txt");
-    #elif TEST == 1
-        file_in.open("entradas/entrada1.txt");
-        file_out.open("saida1.txt");
-    #else
-        file_in.open("entradas/entrada2.txt");
-        file_out.open("saida2.txt");
-    #endif
+
+    /* Entrada 1 - Teste de correção */
+
+    file_in.open("entradas/entrada1.txt");
+    file_out.open("saida1.txt");
 
     if (!file_in.is_open()) {
         std::cerr << "Erro ao tentar abrir arquivo de entrada" << std::endl;
         return 1;
     }
 
-    std::vector<data_t> data_vector;
+    if (!file_out.is_open()) {
+        std::cerr << "Erro ao tentar abrir arquivo de saída" << std::endl;
+        return 1;
+    }
+
     
     while (get_input_vector(data_vector, file_in)) {
-        Sequence sequence = Sequence(shell_rule);
-
         BenchmarkConfig config = {
             .data_vector = data_vector,
             .file_out = file_out,
         };
 
-        sort_benchmark(config, Sequence(&shell_rule), "SHELL");
-        sort_benchmark(config, Sequence(&knuth_rule), "KNUTH");
-        sort_benchmark(config, Sequence(&ciura_rule), "CIURA");
+        sort_benchmark(config, Sequence(&shell_rule), "SHELL", TestType::Correctness);
+        sort_benchmark(config, Sequence(&knuth_rule), "KNUTH", TestType::Correctness);
+        sort_benchmark(config, Sequence(&ciura_rule), "CIURA", TestType::Correctness);
+    }
+
+    file_in.close();
+    file_out.close();
+
+
+    /* Entrada 2 - Teste de performance */
+
+    file_in.open("entradas/entrada2.txt");
+    file_out.open("saida2.txt");
+
+    data_vector.clear();
+
+    while (get_input_vector(data_vector, file_in)) {
+        BenchmarkConfig config = {
+            .data_vector = data_vector,
+            .file_out = file_out,
+        };
+
+        sort_benchmark(config, Sequence(&shell_rule), "SHELL", TestType::Performance);
+        sort_benchmark(config, Sequence(&knuth_rule), "KNUTH", TestType::Performance);
+        sort_benchmark(config, Sequence(&ciura_rule), "CIURA", TestType::Performance);
     }
 
     file_in.close();
